@@ -6,7 +6,7 @@
 /*   By: wting <wting@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/21 13:50:53 by wting             #+#    #+#             */
-/*   Updated: 2022/07/08 15:31:00 by wting            ###   ########.fr       */
+/*   Updated: 2022/07/26 13:56:44 by wting            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,25 +14,25 @@
 
 static char	*trimmer(char *str)
 {
-	char	*a;
+	char	*ret;
 	int		i;
 
 	i = 0;
 	while (str[i] != '\n' && str[i] != '\0')
 		++i;
-	a = malloc(sizeof(char) * (i + 2));
-	if (!a)
+	ret = malloc(sizeof(char) * (i + 2));
+	if (!ret)
 		return (NULL);
 	i = 0;
 	while (str[i] != '\n' && str[i] != '\0')
 	{
-		a[i] = str[i];
+		ret[i] = str[i];
 		i++;
 	}
 	if (str[i] == '\n')
-		a[i++] = '\n';
-	a[i] = '\0';
-	return (a);
+		ret[i++] = '\n';
+	ret[i] = '\0';
+	return (ret);
 }
 
 char	*get_next_line(int fd)
@@ -42,6 +42,7 @@ char	*get_next_line(int fd)
 	int			count;
 	char		*ret;
 	char		*first;
+	char		*storage;
 
 	tmp = malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	first = tmp;
@@ -51,11 +52,14 @@ char	*get_next_line(int fd)
 		tmp[count] = '\0';
 		if (ft_strchr(tmp, '\n'))
 		{
-			ret = ft_strjoin(buff, trimmer(tmp));
+			storage = trimmer(tmp);
+			ret = ft_strjoin(buff, storage);
+			free (storage);
 			while (*tmp != '\n')
 				++tmp;
 			++tmp;
-			free (buff);
+			if (buff)
+				free (buff);
 			buff = ft_strdup(tmp);
 			free(first);
 			return (ret);
@@ -73,26 +77,31 @@ char	*get_next_line(int fd)
 		{
 			ret = ft_strjoin(buff, tmp);
 			free (tmp);
-			free (buff);
-			return (ret);
+			buff = ft_strdup(ret);
+			free (ret);
+			break;
 		}
 	}
 	if (ft_strchr(buff, '\n'))
 	{
-		printf("buff: %s", buff);
+		// printf("buff: %s", buff);
 		ret = trimmer(buff);
-		while (*buff != '\n' && *buff)
+		// printf("%d", count);
+		while (buff[count] != '\n')
 			++count;
 		++count;
 		free(tmp);
 		tmp = ft_strdup(buff + count);
 		free (buff);
-		buff = tmp;
+		buff = ft_strdup(tmp);
+		free (tmp);
 		return (ret);
 	}
 	if (buff)
 	{
+		free (tmp);
 		tmp = ft_strdup(buff);
+		free (buff);
 		buff = NULL;
 		return (tmp);
 	}
